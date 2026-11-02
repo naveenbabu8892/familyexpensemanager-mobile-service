@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="Family Expense Manager - Collaborative household expense and budget tracker">
+
+  <!-- PWA & Mobile Web App Meta -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Family Expense">
+  <meta name="theme-color" content="#C05C46" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#2C221E" media="(prefers-color-scheme: dark)">
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="manifest" href="manifest.json">
+
+  <title>Family Expense Manager</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #FBF8F3;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      overflow: hidden;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    #loading-splash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, #FBF8F3 0%, #F4EFEA 100%);
+      z-index: 999999;
+      transition: opacity 0.4s ease-out;
+    }
+
+    .splash-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 24px;
+      border-radius: 24px;
+      max-width: 360px;
+      width: 85%;
+      text-align: center;
+    }
+
+    .emblem {
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #C05C46 0%, #A94E3A 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 24px rgba(192, 92, 70, 0.28);
+      margin-bottom: 20px;
+      animation: pulse-emblem 2s infinite ease-in-out;
+    }
+
+    .emblem svg {
+      width: 44px;
+      height: 44px;
+      fill: #FBF8F3;
+    }
+
+    .title {
+      font-family: "Georgia", serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #2C221E;
+      margin-bottom: 8px;
+      letter-spacing: -0.3px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: #7A6F68;
+      margin-bottom: 28px;
+    }
+
+    .progress-bar {
+      width: 140px;
+      height: 4px;
+      background-color: #E6DED5;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 45%;
+      background: linear-gradient(90deg, #5E7052 0%, #C05C46 100%);
+      border-radius: 4px;
+      animation: indeterminate 1.5s infinite ease-in-out;
+    }
+
+    @keyframes pulse-emblem {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 10px 24px rgba(192, 92, 70, 0.28);
+      }
+      50% {
+        transform: scale(1.04);
+        box-shadow: 0 14px 30px rgba(192, 92, 70, 0.38);
+      }
+    }
+
+    @keyframes indeterminate {
+      0% {
+        left: -40%;
+        width: 40%;
+      }
+      50% {
+        left: 30%;
+        width: 50%;
+      }
+      100% {
+        left: 100%;
+        width: 30%;
+      }
+    }
+
+    /* PWA Install Floating Banner */
+    #pwa-install-banner {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 32px);
+      max-width: 440px;
+      background: #2C221E;
+      color: #FBF8F3;
+      padding: 12px 16px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      z-index: 99999;
+      font-family: inherit;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { transform: translate(-50%, 20px); opacity: 0; }
+      to { transform: translate(-50%, 0); opacity: 1; }
+    }
+
+    .install-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .install-icon {
+      width: 36px;
+      height: 36px;
+      background: #C05C46;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .install-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .install-text strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #FFFFFF;
+      letter-spacing: 0.2px;
+    }
+
+    .install-text span {
+      display: block;
+      font-size: 12px;
+      color: #C5BDB5;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .install-action-btn {
+      background: #C05C46;
+      color: #FFFFFF;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+
+    .install-action-btn:hover {
+      background: #A94E3A;
+    }
+
+    .install-close-btn {
+      background: transparent;
+      border: none;
+      color: #8D857E;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .install-close-btn:hover {
+      color: #FFFFFF;
+    }
+  </style>
+</head>
+<body>
+  <!-- Native PWA Splash Screen -->
+  <div id="loading-splash">
+    <div class="splash-card">
+      <div class="emblem">
+        <svg viewBox="0 0 24 24">
+          <path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+        </svg>
+      </div>
+      <h1 class="title">Family Expense</h1>
+      <p class="subtitle">Household Budget & Expense Manager</p>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PWA Install Banner -->
+  <div id="pwa-install-banner">
+    <div class="install-content">
+      <div class="install-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="#FFFFFF">
+          <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/>
+        </svg>
+      </div>
+      <div class="install-text">
+        <strong>Install App</strong>
+        <span id="install-desc">Add to Home Screen for fast offline access</span>
+      </div>
+      <button id="pwa-install-btn" class="install-action-btn">Install</button>
+      <button id="pwa-close-btn" class="install-close-btn" aria-label="Close">&times;</button>
+    </div>
+  </div>
+
+  <script>
+    function removeSplash() {
+      const splash = document.getElementById('loading-splash');
+      if (splash) {
+        splash.style.opacity = '0';
+        setTimeout(function() {
+          if (splash.parentNode) {
+            splash.parentNode.removeChild(splash);
+          }
+        }, 400);
+      }
+    }
+
+    // Listen for Flutter's first rendered frame
+    window.addEventListener('flutter-first-frame', removeSplash);
+
+    // Fallback: remove after 6 seconds in case event was missed
+    setTimeout(removeSplash, 6000);
+
+    // --- PWA Installation Coordination ---
+    let deferredPrompt = null;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      window.deferredPrompt = e;
+      if (!isStandalone) {
+        const banner = document.getElementById('pwa-install-banner');
+        if (banner) banner.style.display = 'block';
+      }
+    });
+
+    // Detect iOS Safari
+    const isIos = () => {
+      const ua = window.navigator.userAgent.toLowerCase();
+      return /iphone|ipad|ipod/.test(ua);
+    };
+
+    if (isIos() && !isStandalone) {
+      setTimeout(() => {
+        const banner = document.getElementById('pwa-install-banner');
+        const desc = document.getElementById('install-desc');
+        const btn = document.getElementById('pwa-install-btn');
+        if (banner && desc && btn) {
+          desc.textContent = 'Tap Share \u2398 then "Add to Home Screen"';
+          btn.style.display = 'none';
+          banner.style.display = 'block';
+        }
+      }, 2500);
+    }
+
+    document.getElementById('pwa-install-btn')?.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        if (choice && choice.outcome === 'accepted') {
+          const banner = document.getElementById('pwa-install-banner');
+          if (banner) banner.style.display = 'none';
+        }
+        deferredPrompt = null;
+      }
+    });
+
+    document.getElementById('pwa-close-btn')?.addEventListener('click', () => {
+      const banner = document.getElementById('pwa-install-banner');
+      if (banner) banner.style.display = 'none';
+    });
+
+    window.addEventListener('appinstalled', () => {
+      const banner = document.getElementById('pwa-install-banner');
+      if (banner) banner.style.display = 'none';
+      deferredPrompt = null;
+    });
+  </script>
+
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>
